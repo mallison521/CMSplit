@@ -1,12 +1,29 @@
 CMSplit = CMSplit or {}
 
+function CMSplit:GetCharDB()
+    local name, realm = UnitName("player")
+    realm = GetNormalizedRealmName() or realm or "UnknownRealm"
+    name = name or "UnknownPlayer"
+
+    CMSplitDB = CMSplitDB or {}
+    CMSplitDB.perChar = CMSplitDB.perChar or {}
+
+    CMSplitDB.perChar[realm] = CMSplitDB.perChar[realm] or {}
+    CMSplitDB.perChar[realm][name] = CMSplitDB.perChar[realm][name] or {}
+
+    return CMSplitDB.perChar[realm][name]
+end
+
+
 function CMSplit:OnInitialize()
     CMSplitDB = CMSplitDB or {}
-    CMSplitDB.currentRun = {
-    startTime = time(),
-    splits = {},
-    instanceID = select(8, GetInstanceInfo()),
+    local db = self:GetCharDB()
+    db.currentRun = {
+        startTime = time(),
+        splits = {},
+        instanceID = select(8, GetInstanceInfo()),
     }
+
     print("|cff00ff00[CM Split]|r loaded! Type /cmsplit to configure.")
     self:RestoreRun()
 end
@@ -21,14 +38,16 @@ f:SetScript("OnEvent", function(self, event, addonName)
 end)
 
 function CMSplit:RestoreRun()
-    if not CMSplitDB.currentRun then return end
+    local db = self:GetCharDB()
+    if not db.currentRun then return end
 
-    local run = CMSplitDB.currentRun
+    local run = db.currentRun
+
     local instanceID = select(8, GetInstanceInfo())
 
     -- Only restore if instance matches
     if run.instanceID ~= instanceID then
-        CMSplitDB.currentRun = { startTime = nil, splits = {}, instanceID = nil }
+        db.currentRun = { startTime = nil, splits = {}, instanceID = nil }
         return
     end
 
@@ -65,7 +84,9 @@ end
 
 
 function CMSplit:EndRun()
-    local run = CMSplitDB.currentRun
+    local db = self:GetCharDB()
+    local run = db.currentRun
+
     if not run or not run.startTime then return end
 
     -- Build a summary to save to history
@@ -86,12 +107,12 @@ function CMSplit:EndRun()
 
     -- Save it to history by instance/dungeon name or ID (use currentInstanceName or instanceID)
     local dungeonKey = self.currentInstanceName or tostring(run.instanceID or "unknown")
-    CMSplitDB.history = CMSplitDB.history or {}
-    CMSplitDB.history[dungeonKey] = CMSplitDB.history[dungeonKey] or {}
-    table.insert(CMSplitDB.history[dungeonKey], historyEntry)
+    db.history = db.history or {}
+    db.history[dungeonKey] = db.history[dungeonKey] or {}
+    table.insert(db.history[dungeonKey], historyEntry)
 
     -- Clear current run to mark no active timer
-    CMSplitDB.currentRun = {
+    db.currentRun = {
         startTime = nil,
         splits = {},
         instanceID = nil,

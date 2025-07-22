@@ -1,18 +1,22 @@
 function CMSplit:InitHistory()
-    CMSplitDB = CMSplitDB or {}
-    CMSplitDB.history = CMSplitDB.history or {}
+    local db = self:GetCharDB()
+    db.history = db.history or {}
 end
 
 function CMSplit:SaveSplit(dungeonName, splitData)
-    splitData.startTime = time()  -- Add this to save the current actual date/time
-    CMSplitDB.history[dungeonName] = CMSplitDB.history[dungeonName] or {}
-    table.insert(CMSplitDB.history[dungeonName], splitData)
+    local db = self:GetCharDB()
+    db.history = db.history or {}
+
+    splitData.startTime = time() -- Add this to save the current actual date/time
+    db.history[dungeonName] = db.history[dungeonName] or {}
+    table.insert(db.history[dungeonName], splitData)
+
     print("|cff00ff00[CM Split]|r Saved run to history.")
 end
 
-
 function CMSplit:GetBestSplit(dungeonName)
-    local runs = CMSplitDB.history[dungeonName]
+    local db = self:GetCharDB()
+    local runs = db.history and db.history[dungeonName]
     if not runs or #runs == 0 then return nil end
 
     table.sort(runs, function(a, b)
@@ -61,12 +65,12 @@ local function ClearChildren(frame)
     end
 end
 
--- Convert to CMSplit methods
 function CMSplit:PopulateDungeonList()
     ClearChildren(dungeonListContent)
+    local db = self:GetCharDB()
 
     local yOffset = -5
-    for dungeonName, runs in pairs(CMSplitDB.history or {}) do
+    for dungeonName, runs in pairs(db.history or {}) do
         local btn = CreateFrame("Button", nil, dungeonListContent, "UIPanelButtonTemplate")
         btn:SetSize(160, 20)
         btn:SetPoint("TOPLEFT", dungeonListContent, "TOPLEFT", 0, yOffset)
@@ -86,7 +90,8 @@ function CMSplit:PopulateRunList()
     ClearChildren(runListContent)
     if not selectedDungeon then return end
 
-    local runs = CMSplitDB.history[selectedDungeon]
+    local db = self:GetCharDB()
+    local runs = db.history and db.history[selectedDungeon]
     if not runs then return end
 
     local yOffset = -5
