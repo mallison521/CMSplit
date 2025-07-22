@@ -17,6 +17,7 @@ end
 
 function CMSplit:OnInitialize()
     CMSplitDB = CMSplitDB or {}
+    self.hudVisible = true
     local db = self:GetCharDB()
     db.currentRun = {
         startTime = time(),
@@ -26,6 +27,9 @@ function CMSplit:OnInitialize()
 
     print("|cff00ff00[CM Split]|r loaded! Type /cmsplit to configure.")
     self:RestoreRun()
+    if CMSplit.InitMinimap then
+        CMSplit:InitMinimap()
+    end
 end
 
 

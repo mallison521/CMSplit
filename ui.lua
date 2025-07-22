@@ -138,15 +138,18 @@ function CMSplit:UpdateHUD(timeText)
 end
 
 
-
 function CMSplit:HideHUD()
-    if self.hud then self.hud:Hide() end
+    if self.hud then
+        self.hud:Hide()
+        self.hudVisible = false
+    end
 end
 
 function CMSplit:CreateHUD(force)
     if self.hud then  -- if hud exists, just show it and return
         self.hud:Show()
         self:UpdateHUD("00:00")  -- reset timer text on show
+        self.hudVisible = true
         return
     end
 
